@@ -3,6 +3,25 @@
 This code is written based on this [tutorial](https://takehomes.com/library/developers/intro-to-ai).  
 The Readme and the boilerplate code is written by the tutorial author, a development environment was provided, I filled in the empty code stubs with functional code and learned the concepts.
 
+<details>
+  <summary>Tutorial Info</summary>
+
+This tutorial is designed for software developers who are curious about how to build programs with AI, specifically Large Language Models (LLMs). In the following lesson, you will learn about the limitations of working with LLMs and how to use a framework like LangChain to help overcome these limitations.
+
+You will put all this knowledge into practice by creating a chat bot that can answer questions about the recent state of the world by parsing a PDF (the World Economic Outlook Update, January 2024), embedding it into a vectorized database, and using a technique called Retrieval Augmented Generation to supplement the base model of ChatGPT with this new information.
+
+Prerequisites
+Basic knowledge of Python
+OpenAI API key with credits
+Learning Objectives
+By the end of this tutorial, you will be able to:
+
+Understand how to work with LLMs and become familiar with their limitations
+Understand how to chain together different components of the AI stack with LangChain to overcome these limitations
+Build a working chat bot that can query a PDF file for additional information
+</details>
+
+
 ## Overview
 
 In this lesson, we will build a chat bot that can answer questions about a provided PDF file. The goal of this lesson is to expose you to many concepts in AI for working with Large Language Models (LLMs). You are not expected to know how to implement all of the coding tasks completely, but you should try to go as far as you can and then compare your solution to the provided solution, or just copy and paste the provided solution to move on.

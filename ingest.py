@@ -11,8 +11,13 @@ import re
 import sys
 from typing import Callable, Dict, List, Tuple
 
+import pdfplumber
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from PyPDF4 import PdfFileReader
 
 
 def extract_metadata_from_pdf(file_path: str) -> dict:
@@ -22,6 +27,12 @@ def extract_metadata_from_pdf(file_path: str) -> dict:
     :param file_path: The path to the PDF file.
     :return: A dictionary containing the title and creation_date.
     """
+    reader = PdfFileReader(file_path)
+    metadata = reader.getDocumentInfo()
+    return {
+        "title": metadata.get("/Title", "").strip(),
+        "creation_date": metadata.get("/CreationDate", "").strip(),
+    }
 
 
 def extract_pages_from_pdf(file_path: str) -> List[Tuple[int, str]]:
@@ -31,6 +42,11 @@ def extract_pages_from_pdf(file_path: str) -> List[Tuple[int, str]]:
     :param file_path: The path to the PDF file.
     :return: A list of tuples containing the page number and the extracted text.
     """
+    results = []
+    with pdfplumber.open(file_path) as pdf:
+        for page_number, page in enumerate(pdf.pages):
+            results.append((page_number, page.extract_text()))
+    return results
 
 
 def parse_pdf(file_path: str) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
@@ -45,7 +61,6 @@ def parse_pdf(file_path: str) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
 
     metadata = extract_metadata_from_pdf(file_path)
     pages = extract_pages_from_pdf(file_path)
-
     return pages, metadata
 
 
@@ -78,6 +93,28 @@ def text_to_docs(
     """
     Converts a list of tuples of page numbers and extracted text to a list of Documents.
     """
+    doc_chunks = []
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        separators=["\n\n", "\n", ".", "!", "?", ",", " ", ""],
+        chunk_overlap=200,
+    )
+    for page_num, page in text:
+        chunks = text_splitter.split_text(page)
+        for index, chunk in enumerate(chunks):
+            doc = Document(
+                page_content=chunk,
+                metadata={
+                    "page_number": page_num,
+                    "chunk": index,
+                    "source": f"p{page_num}-{index}",
+                    **metadata,
+                },
+            )
+            doc_chunks.append(doc)
+
+    return doc_chunks
 
 
 def store_chunks(document_chunks: List[Document], collection_name: str, directory: str):
@@ -88,6 +125,15 @@ def store_chunks(document_chunks: List[Document], collection_name: str, director
     :param collection_name: Name of this collection.
     :param directory: Location on disk to persist the data.
     """
+    embedding_function = OpenAIEmbeddings()
+
+    db = Chroma.from_documents(
+        document_chunks,
+        embedding_function,
+        collection_name=collection_name,
+        persist_directory=directory,
+    )
+    db.persist()
 
 
 if __name__ == "__main__":

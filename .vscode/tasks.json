@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "devfile",
+			"command": "HOME=/tmp poetry install",
+			"workdir": "${PROJECT_SOURCE}",
+			"component": "build-container",
+			"problemMatcher": [],
+			"label": "devfile: 1-install"
+		},
+		{
+			"type": "devfile",
+			"command": "HOME=/tmp poetry shell",
+			"workdir": "${PROJECT_SOURCE}",
+			"component": "build-container",
+			"problemMatcher": [],
+			"label": "devfile: 2-dev"
+		}
+	]
+}

@@ -10,15 +10,24 @@ from dotenv import load_dotenv
 from langchain.chains import ConversationalRetrievalChain
 from langchain.schema import AIMessage, HumanMessage
 from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 
-def make_chain(model_name: str, vector_store: Chroma) -> ConversationalRetrievalChain:
+def make_chain(
+    model_name: str, vector_store: Chroma, verbose: bool
+) -> ConversationalRetrievalChain:
     """
     Creates a Chroma vector store and persists the documents to disk.
 
     :return: A chain with the specified model using the vector DB for retrieval.
     """
+    model = ChatOpenAI(temperature=0, model_name=model_name, verbose=verbose)
+    return ConversationalRetrievalChain.from_llm(
+        model,
+        retriever=vector_store.as_retriever(),
+        return_source_documents=True,
+        verbose=verbose,
+    )
 
 
 if __name__ == "__main__":
@@ -31,8 +40,8 @@ if __name__ == "__main__":
         embedding_function=embedding,
         persist_directory="data/chroma",
     )
-
-    chain = make_chain("gpt-3.5-turbo", vector_store)
+    verbose = True
+    chain = make_chain("gpt-3.5-turbo", vector_store, verbose=verbose)
     chat_history = []
 
     while True:

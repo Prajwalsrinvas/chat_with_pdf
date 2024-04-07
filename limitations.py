@@ -26,3 +26,8 @@ if __name__ == "__main__":
             print(chat_completion.choices[0].message.content)
         except BadRequestError as e:
             print(f"Error calling OpenAI: {e}")
+
+"""output:
+(chat-pdf-py3.11) $ python limitations.py
+Error calling OpenAI: Error code: 400 - {'error': {'message': "This model's maximum context length is 16385 tokens. However, your messages resulted in 24886 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
+"""
